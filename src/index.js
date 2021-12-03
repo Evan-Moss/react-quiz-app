@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import shuffledQuestions from './questions'; 
-import { List, ListItem, Typography } from '@material-ui/core';
-import { Card, CardContent, Box, Stack, ListItemText } from '@mui/material';
-import { ThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline'
-import theme from './theme'
+import { SpeedDial, SpeedDialIcon, SpeedDialAction, Card, CardContent, Box, 
+    Stack, ListItemText, List, ListItem, Typography} from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline'
+import { greenTheme, purpleTheme, pinkTheme } from './theme'
+
 
 function Answer(props) {
     return (
@@ -15,6 +16,7 @@ function Answer(props) {
                 className='Answer' 
                 onClick= {props.onClick}
                 style = {props.style}
+                disabled={props.clicked}
             >
             <ListItemText sx={{ textAlign: 'center' }}>{props.value}</ListItemText>
             </ListItem>
@@ -51,7 +53,7 @@ class Answers extends React.Component {
                 value = {this.props.options[i]}
                 onClick = {() => this.props.onClick(this.props.options[i], this.props.correct)}
                 quizEnded = {this.props.quizEnded}
-                //style = {style} 
+                //clicked = {this.props.clicked} 
             />
             
         )
@@ -75,9 +77,53 @@ class Answers extends React.Component {
     }
 }
 
+class Settings extends React.Component {
+    render() {
+
+        const themeOptions = [{
+            title: 'Green',
+            theme: greenTheme,
+            color: '#e4f0e2'
+        },
+        {
+            title: 'Purple',
+            theme: purpleTheme,
+            color: '#eee2f0'
+        },
+        {
+            title: 'Pink',
+            theme: pinkTheme,
+            color: '#ffabc7'
+        },
+        ]   
+
+        return (
+            <div>
+            <SpeedDial
+                ariaLabel="SpeedDial basic example"
+                sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                icon={<SpeedDialIcon />}
+            >
+            {themeOptions.map((theme) => (
+                <SpeedDialAction
+                sx = {'background-color: ' + theme.color}
+                onClick= {() => {this.props.onClick(theme.theme)}}
+                tooltipTitle={theme.title}
+                />
+            ))}
+            </SpeedDial>
+            </div>
+        )
+    }
+}
+
 class Game extends React.Component {
-    // If you add a state, then you can pass color to render
-    
+    // If you add a history state, then you can pass color to render
+
+    changeTheme(chosenTheme) {
+        this.setState({theme: chosenTheme})
+    }
+
     constructor(props){
         super(props);
         const QS = shuffledQuestions();
@@ -86,35 +132,37 @@ class Game extends React.Component {
             questions: QS,
             quizEnded: false,
             currScore: 0,
+            theme: greenTheme
         }
         this.state.numQuestions =  this.state.questions.length;
     }
 
     handleClick(value, correct) {
+        
         let score = 0;
 
         if (value === correct){
             console.log('Correct!!');
             score++;
             this.setState({currScore: this.state.currScore + score});
-        } else {
-            console.log('Incorrect!!');
         }
 
         if (this.state.currQuestion + 1 >= this.state.numQuestions){
-            console.log("STOP!");
             this.setState({quizEnded:true});
             return
         }
-        setTimeout(console.log('test'), 10000);
-        this.setState({currQuestion: this.state.currQuestion + 1});
+        //setTimeout(() => {this.setState({currQuestion: this.state.currQuestion + 1})}, 500);
+        this.setState({currQuestion: this.state.currQuestion + 1})
     }
 
     render() {
         return (
-            <ThemeProvider theme = {theme}>
+            <ThemeProvider theme = {this.state.theme}>
             <CssBaseline/>
                 <div className='game'>
+                    <Settings 
+                        onClick={(chosenTheme) => {this.changeTheme(chosenTheme)}}
+                    />
                     <Box 
                         display="flex" 
                         justifyContent="center" 
